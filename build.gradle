@@ -1,0 +1,21 @@
+group 'be.solid'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.javamoney:moneta:1.0'
+    compile 'com.google.guava:guava:19.0'
+    testCompile 'info.cukes:cucumber-java:1.2.4'
+    testCompile 'info.cukes:cucumber-junit:1.2.4'
+    testCompile 'info.cukes:cucumber-spring:1.2.4'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.springframework:spring-context:4.2.5.RELEASE'
+    testCompile 'org.springframework:spring-tx:4.2.5.RELEASE' // cucumber requires this somehow
+    testCompile 'org.springframework:spring-test:4.2.5.RELEASE'
+}
+
