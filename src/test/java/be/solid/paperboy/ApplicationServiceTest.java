@@ -71,9 +71,9 @@ public class ApplicationServiceTest {
 
     private void checkHasPaper(Customer x) {
         if (isCustomerWhoDidntHaveAnyMoneyToStartWith(x))
-            assertTrue(String.format("The customer {%s} without money obtained a paper", x), x.getPaper() == null);
+            assertTrue(String.format("The customer {%s} without money obtained a paper", x), !x.hasPaper());
         else
-            assertTrue(String.format("The customer {%s} with money has no paper", x), x.getPaper() != null);
+            assertTrue(String.format("The customer {%s} with money has no paper", x), x.hasPaper());
     }
 
     private boolean isCustomerWhoDidntHaveAnyMoneyToStartWith(Customer x) {

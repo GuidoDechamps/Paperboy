@@ -1,13 +1,14 @@
 package be.solid.paperboy.model;
 
-import org.javamoney.moneta.Money;
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
 
 public class WalletFactory {
 
-    private final String currencyCode;
+    private final CurrencyUnit currencyCode;
 
     public WalletFactory(String currencyCode) {
-        this.currencyCode = currencyCode;
+        this.currencyCode = Monetary.getCurrency(currencyCode);
     }
 
 
@@ -16,13 +17,8 @@ public class WalletFactory {
     }
 
     public Wallet createWallet(int amount) {
-        final Wallet wallet = new Wallet();
-        wallet.setMoney(createMoney(amount));
-        return wallet;
+        return new Wallet(amount, currencyCode);
     }
 
-    private Money createMoney(int amount) {
-        return Money.of(amount, currencyCode);
-    }
 
 }

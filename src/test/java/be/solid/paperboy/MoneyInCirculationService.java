@@ -28,16 +28,14 @@ class MoneyInCirculationService {
 
     private MonetaryAmount countAllThePaperBoyMoney() {
         return paperBoyRepository.getAll().stream()
-                .map(PaperBoy::getWallet)
-                .map(Wallet::getMoney)
+                .map(PaperBoy::getAmountOfMoney)
                 .reduce(MonetaryFunctions.sum())
                 .orElse(NO_MONEY);
     }
 
     private MonetaryAmount countAllTheCustomerMoney() {
         return customerRepository.getAll().stream()
-                .map(Customer::getWallet)
-                .map(Wallet::getMoney)
+                .map(Customer::getAmountOfMoney)
                 .reduce(MonetaryFunctions.sum())
                 .orElse(NO_MONEY);
     }

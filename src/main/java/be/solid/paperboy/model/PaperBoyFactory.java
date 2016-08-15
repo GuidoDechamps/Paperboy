@@ -10,10 +10,8 @@ public class PaperBoyFactory {
     }
 
     public PaperBoy createPaperBoy() {
-        final PaperBoy paperBoy = new PaperBoy();
         final Wallet wallet = walletFactory.createWallet();
-        paperBoy.setWallet(wallet);
-        return paperBoy;
+        return new PaperBoy(wallet);
     }
 
     public ImmutableSet<PaperBoy> createPaperBoys(int nrOfPaperBoys) {

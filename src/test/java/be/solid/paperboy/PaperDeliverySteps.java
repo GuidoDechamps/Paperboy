@@ -1,6 +1,7 @@
 package be.solid.paperboy;
 
 import be.solid.paperboy.model.*;
+import be.solid.paperboy.service.FactoriesForTest;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import cucumber.api.java.en.Given;
@@ -15,15 +16,13 @@ import org.springframework.test.context.ContextConfiguration;
 
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static be.solid.paperboy.common.GuavaCollectors.immutableSet;
-import static java.util.stream.Collectors.counting;
 import static org.junit.Assert.assertEquals;
-
+import static org.junit.Assert.assertTrue;
 
 @ContextConfiguration(classes = {SpringTestConfiguration.class})
 @DirtiesContext
@@ -42,11 +41,8 @@ public class PaperDeliverySteps {
     private PaperBoyFactory paperBoyFactory;
     @Autowired
     private CustomerDTOMapper customerDTOMapper;
-    @Autowired
-    private MoneyInCirculationService moneyInCirculationService;
     //////////State/////////
     private Set<String> allStreets;
-    private MonetaryAmount preDeliveryMoneyAmount;
 
 
     @Given("^a single customer with (\\d+) eur$")
@@ -65,9 +61,8 @@ public class PaperDeliverySteps {
     @Then("^the single customer has (\\d+) eur left and owns a paper state is (true|false)")
     public void the_single_customer_has_eur_left_and_paper(int customerMoney, boolean expectedToHavePaper) throws Throwable {
         final Customer customer = inMemCustomerRepository.getAll().iterator().next();
-        assertEquals(customerMoney, customer.getWallet().getMoney().getNumber().intValue());
-        final boolean hasPaper1 = customer.getPaper() != null;
-        assertEquals(expectedToHavePaper, hasPaper1);
+        assertTrue(customer.hasMoney(FactoriesForTest.createMoney(customerMoney)));
+        assertEquals(expectedToHavePaper, customer.hasPaper());
     }
 
 
@@ -91,7 +86,6 @@ public class PaperDeliverySteps {
 
     @When("^(?:the paper is delivered|the papers are delivered)$")
     public void the_papers_are_delivered() throws Throwable {
-        preDeliveryMoneyAmount = moneyInCirculationService.countAllTheMoneyInCirculation();
         applicationService.deliverPapers(allStreets);
     }
 
@@ -107,12 +101,6 @@ public class PaperDeliverySteps {
         expectedCustomerState.stream().forEach(this::validateCustomerMoney);
     }
 
-    @Then("^the amount in circulation remains unchanged$")
-    public void the_amount_in_circulation_remains_unchanged() throws Throwable {
-        final MonetaryAmount afterDeliveryMoneyAmount = moneyInCirculationService.countAllTheMoneyInCirculation();
-        assertEquals("The amount of money in circulation should remain unchanged", preDeliveryMoneyAmount, afterDeliveryMoneyAmount);
-    }
-
 
     private void validateExpectedRevenue(int expectedRevenue) {
         final MonetaryAmount revenue = getRevenue();
@@ -121,8 +109,8 @@ public class PaperDeliverySteps {
 
     private void validateCustomerMoney(CustomerDTO expectedCustomerState) {
         final Customer customerForAddress = inMemCustomerRepository.getCustomerForAddress(expectedCustomerState.getStreet(), expectedCustomerState.getHouseNr());
-        assertEquals(expectedCustomerState.toString(), expectedCustomerState.getMoney(), customerForAddress.getWallet().getMoney().getNumber().intValue());
-        assertEquals(expectedCustomerState.toString(), expectedCustomerState.getOwnsPaper(), customerForAddress.getPaper() != null);
+        assertEquals(expectedCustomerState.toString(), expectedCustomerState.getMoney(), customerForAddress.getAmountOfMoney().getNumber().intValue());
+        assertEquals(expectedCustomerState.toString(), expectedCustomerState.getOwnsPaper(), customerForAddress.hasPaper());
     }
 
 
@@ -139,9 +127,8 @@ public class PaperDeliverySteps {
     private long getNrOfPapersUnsold() {
         final Set<PaperBoy> paperBoys = inMemPaperBoyRepository.getAll();
         return paperBoys.stream()
-                .map(PaperBoy::getPapers)
-                .flatMap(Collection::stream)
-                .collect(counting());
+                .mapToInt(PaperBoy::getNrOfPapers)
+                .sum();
     }
 
     private MonetaryAmount getRevenue() {
@@ -152,8 +139,7 @@ public class PaperDeliverySteps {
 
     private MonetarySummaryStatistics getMonetarySummaryStatistics(Set<PaperBoy> paperBoys) {
         final Map<CurrencyUnit, MonetarySummaryStatistics> collect = paperBoys.stream()
-                .map(PaperBoy::getWallet)
-                .map(Wallet::getMoney)
+                .map(PaperBoy::getAmountOfMoney)
                 .collect(MonetaryFunctions.groupBySummarizingMonetary()).get();
         return getSingleStatistic(collect);
     }

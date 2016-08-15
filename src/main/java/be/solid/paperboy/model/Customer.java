@@ -1,33 +1,46 @@
 package be.solid.paperboy.model;
 
+import javax.money.MonetaryAmount;
+import java.util.Optional;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class Customer {
-    private Wallet wallet;
-    private Paper paper;
-    private Address address;
 
+    private final Wallet wallet;
+    private final Address address;
+    private Paper paper;//TODO Nullable
 
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
+    Customer(Address address, Wallet wallet) {
+        checkNotNull(address);
+        checkNotNull(wallet);
         this.address = address;
-    }
-
-    public Wallet getWallet() {
-        return wallet;
-    }
-
-    public void setWallet(Wallet wallet) {
         this.wallet = wallet;
     }
 
-    public Paper getPaper() {
-        return paper;
+    public void buyPaper(PaperBoy paperBoy) {
+        final MonetaryAmount price = paperBoy.getPaperPrice();
+        if (wantsPaper(price)) {
+            final MonetaryAmount money = wallet.takeMoney(price.getNumber());
+            final Optional<Paper> paper = paperBoy.sellPaper(money);
+            paper.ifPresent(this::setPaper);
+        }
     }
 
-    public void setPaper(Paper paper) {
-        this.paper = paper;
+    public boolean livesHere(Address address) {
+        return this.address.equals(address);
+    }
+
+    public boolean hasMoney(MonetaryAmount customerMoney) {
+        return wallet.containsAmount(customerMoney);
+    }
+
+    public boolean hasPaper() {
+        return paper != null;
+    }
+
+    public MonetaryAmount getAmountOfMoney() {
+        return wallet.getAmountOfMoney();
     }
 
     @Override
@@ -36,4 +49,17 @@ public class Customer {
                 "address=" + address +
                 '}';
     }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    private void setPaper(Paper x) {
+        this.paper = x;
+    }
+
+    private boolean wantsPaper(MonetaryAmount price) {
+        return paper == null && wallet.containsAmount(price);
+    }
+
 }

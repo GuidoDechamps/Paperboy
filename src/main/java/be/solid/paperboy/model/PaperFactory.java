@@ -24,11 +24,8 @@ public class PaperFactory {
     }
 
     private Paper createPaper(LocalDate date) {
-        final Paper element = new Paper();
-        element.setDate(date);
         final MonetaryAmount paperPrice = priceService.getPaperPrice(date);
-        element.setUnitPriceOfPaper(paperPrice);
-        return element;
+        return Paper.create(date, paperPrice);
     }
 
 

@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
-import static be.solid.paperboy.service.FactoriesForTest.createMoney;
-
 
 public class CustomersForStreetFactory {
     private static final int NO_MONEY = 0;
@@ -18,10 +16,6 @@ public class CustomersForStreetFactory {
         this.customerFactory = customerFactory;
     }
 
-    private static String buildHouseNr(int customerMoneyAmount) {
-        return "[" + customerMoneyAmount + "]";
-    }
-
     public boolean isCustomerWhoDidntHaveAnyMoneyToStartWith(Customer customer) {
         final String houseNr = customer.getAddress().getHouseNr();
         return NO_MONEY_HOUSENR.equals(houseNr);
@@ -31,6 +25,10 @@ public class CustomersForStreetFactory {
         final ImmutableSet.Builder<Customer> builder = ImmutableSet.builder();
         streets.stream().forEach(x -> addCustomers(builder, x));
         return builder.build();
+    }
+
+    private static String buildHouseNr(int customerMoneyAmount) {
+        return "[" + customerMoneyAmount + "]";
     }
 
     private ImmutableSet.Builder<Customer> addCustomers(ImmutableSet.Builder<Customer> builder, String streetName) {
@@ -51,11 +49,8 @@ public class CustomersForStreetFactory {
     }
 
     private Customer createCustomer(int customerMoneyAmount, String street) {
-        final Customer customer = customerFactory.createCustomer();
-        customer.getWallet().setMoney(createMoney(customerMoneyAmount));
-        customer.getAddress().setStreet(street);
-        customer.getAddress().setHouseNr(buildHouseNr(customerMoneyAmount));
-        return customer;
+        return customerFactory.createCustomer(street, customerMoneyAmount, buildHouseNr(customerMoneyAmount));
+
     }
 
 
