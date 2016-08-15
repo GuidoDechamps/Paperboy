@@ -21,7 +21,7 @@ public class PaperBoy {
     }
 
     public Optional<Paper> sellPaper(MonetaryAmount money) {
-        if (isMoneySufficient(money) && stillHasPapersToSell())
+        if (hasSufficientMoney(money) && stillHasPapersToSell())
             return makeTransfer(money);
         else
             return Optional.empty();
@@ -51,7 +51,7 @@ public class PaperBoy {
         return Optional.of(papers.pop());
     }
 
-    private boolean isMoneySufficient(MonetaryAmount money) {
+    private boolean hasSufficientMoney(MonetaryAmount money) {
         final MonetaryAmount priceOfPaper = getPaperPrice();
         if (priceOfPaper.isGreaterThan(money)) {
             logInsufficientFunds(money, priceOfPaper);

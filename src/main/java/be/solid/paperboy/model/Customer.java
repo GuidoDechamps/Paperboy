@@ -23,8 +23,11 @@ public class Customer {
         final MonetaryAmount price = paperBoy.getPaperPrice();
         if (wantsPaper(price)) {
             final MonetaryAmount money = wallet.takeMoney(price.getNumber());
-            final Optional<Paper> paper = paperBoy.sellPaper(money);//TODO test case if money was taken but no paper returned, then money should be returned
-            paper.ifPresent(this::setPaper);
+            final Optional<Paper> paper = paperBoy.sellPaper(money);
+            if (paper.isPresent())
+                this.setPaper(paper.get());
+            else
+                wallet.add(money);
         }
     }
 
@@ -44,6 +47,10 @@ public class Customer {
         return wallet.getAmountOfMoney();
     }
 
+    public Address getAddress() {
+        return address;
+    }
+
     @Override
     public String toString() {
         return "Customer{" +
@@ -51,16 +58,12 @@ public class Customer {
                 '}';
     }
 
-    public Address getAddress() {
-        return address;
-    }
-
     private void setPaper(Paper x) {
         this.paper = x;
     }
 
     private boolean wantsPaper(MonetaryAmount price) {
-        return !hasPaper() && wallet.containsAmount(price);
+        return !hasPaper() && hasMoney(price);
     }
 
 }

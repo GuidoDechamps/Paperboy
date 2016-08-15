@@ -41,8 +41,12 @@ public class PaperDeliverySteps {
     private PaperBoyFactory paperBoyFactory;
     @Autowired
     private CustomerDTOMapper customerDTOMapper;
+    @Autowired
+    private MoneyInCirculationService moneyInCirculationService;
+
     //////////State/////////
     private Set<String> allStreets;
+    private MonetaryAmount preDeliveryMoneyAmount;
 
 
     @Given("^a single customer with (\\d+) eur$")
@@ -86,6 +90,7 @@ public class PaperDeliverySteps {
 
     @When("^(?:the paper is delivered|the papers are delivered)$")
     public void the_papers_are_delivered() throws Throwable {
+        preDeliveryMoneyAmount = moneyInCirculationService.countAllTheMoneyInCirculation();
         applicationService.deliverPapers(allStreets);
     }
 
@@ -95,6 +100,11 @@ public class PaperDeliverySteps {
         validateExpectedRevenue(expectedRevenue);
     }
 
+    @Then("^the amount in circulation remains unchanged$")
+    public void the_amount_in_circulation_remains_unchanged() throws Throwable {
+        final MonetaryAmount afterDeliveryMoneyAmount = moneyInCirculationService.countAllTheMoneyInCirculation();
+        assertEquals("The amount of money in circulation should remain unchanged", preDeliveryMoneyAmount, afterDeliveryMoneyAmount);
+    }
 
     @Then("^The resulting customer state:$")
     public void the_resulting_customer_state(List<CustomerDTO> expectedCustomerState) throws Throwable {
