@@ -4,7 +4,6 @@ import org.javamoney.moneta.Money;
 
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
-import javax.money.NumberValue;
 import java.util.Optional;
 
 import static org.javamoney.moneta.Money.of;
@@ -16,7 +15,7 @@ public class Wallet {
         this.money = of(amount, currency);
     }
 
-    public Optional<MonetaryAmount> takeMoney(NumberValue amount) {
+    public Optional<MonetaryAmount> takeMoney(Number amount) {
         final Money extractedMoney = of(amount, money.getCurrency());
         if (money.isGreaterThanOrEqualTo(extractedMoney)) {
             this.money = money.subtract(extractedMoney);
