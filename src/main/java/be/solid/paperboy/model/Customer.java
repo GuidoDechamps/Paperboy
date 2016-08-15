@@ -20,15 +20,9 @@ public class Customer {
     }
 
     public void buyPaper(PaperBoy paperBoy) {
-        final MonetaryAmount price = paperBoy.getPaperPrice();
-        if (wantsPaper(price)) {
-            final MonetaryAmount money = wallet.takeMoney(price.getNumber());
-            final Optional<Paper> paper = paperBoy.sellPaper(money);
-            if (paper.isPresent())
-                this.setPaper(paper.get());
-            else
-                wallet.add(money);
-        }
+        if (!hasPaper())
+            tryToBuy(paperBoy);
+
     }
 
     public boolean livesHere(Address address) {
@@ -58,12 +52,24 @@ public class Customer {
                 '}';
     }
 
+    private void tryToBuy(PaperBoy paperBoy) {
+        final MonetaryAmount price = paperBoy.getPaperPrice();
+        final Optional<MonetaryAmount> money = wallet.takeMoney(price.getNumber());
+        if (money.isPresent())
+            buyPaper(paperBoy, money.get());
+    }
+
     private void setPaper(Paper x) {
         this.paper = x;
     }
 
-    private boolean wantsPaper(MonetaryAmount price) {
-        return !hasPaper() && hasMoney(price);
+    private void buyPaper(PaperBoy paperBoy, MonetaryAmount money) {
+        final Optional<Paper> paper = paperBoy.sellPaper(money);
+        if (paper.isPresent())
+            this.setPaper(paper.get());
+        else
+            wallet.add(money);
     }
+
 
 }
