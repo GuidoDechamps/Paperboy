@@ -1,6 +1,7 @@
 package be.solid.paperboy.service;
 
 import be.solid.paperboy.model.CustomerRepository;
+import be.solid.paperboy.model.PaperFactory;
 import org.javamoney.moneta.Money;
 
 public class FactoriesForTest {
@@ -14,10 +15,9 @@ public class FactoriesForTest {
     }
 
     public static OnePaperBoyPerStreetStrategy createDeliveryStrategy(
-            PaperBoyRoundService paperBoyRoundService,
-            CustomerRepository customerRepository,
-            LoadPaperService loadPaperService) {
-        return new OnePaperBoyPerStreetStrategy(paperBoyRoundService, loadPaperService, customerRepository);
+            PaperFactory paperFactory,
+            CustomerRepository customerRepository) {
+        return new OnePaperBoyPerStreetStrategy(paperFactory, customerRepository);
     }
 
 }

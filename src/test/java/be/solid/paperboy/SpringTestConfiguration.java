@@ -3,8 +3,6 @@ package be.solid.paperboy;
 import be.solid.paperboy.model.*;
 import be.solid.paperboy.service.DeliveryStrategy;
 import be.solid.paperboy.service.FactoriesForTest;
-import be.solid.paperboy.service.LoadPaperService;
-import be.solid.paperboy.service.PaperBoyRoundService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,10 +40,6 @@ public class SpringTestConfiguration {
         return new ApplicationService(deliveryStrategy(), inMemPaperBoyRepository());
     }
 
-    @Bean
-    public PaperBoyRoundService getPaperBoyRoundService() {
-        return new PaperBoyRoundService();
-    }
 
     @Bean
     public PaperFactory paperFactory() {
@@ -72,14 +66,10 @@ public class SpringTestConfiguration {
         return new CustomerFactory(walletFactory());
     }
 
-    @Bean
-    public LoadPaperService loadPaperService() {
-        return new LoadPaperService(paperFactory());
-    }
 
     @Bean
     public DeliveryStrategy deliveryStrategy() {
-        return FactoriesForTest.createDeliveryStrategy(getPaperBoyRoundService(), customerRepository(), loadPaperService());
+        return FactoriesForTest.createDeliveryStrategy(paperFactory(), customerRepository());
     }
 
     @Bean

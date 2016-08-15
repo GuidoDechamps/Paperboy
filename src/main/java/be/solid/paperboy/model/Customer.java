@@ -9,7 +9,8 @@ public class Customer {
 
     private final Wallet wallet;
     private final Address address;
-    private Paper paper;//TODO Nullable
+    private Paper paper;//TODO Nullable. Use of optional not advised by java designers for fields.
+
 
     Customer(Address address, Wallet wallet) {
         checkNotNull(address);
@@ -22,7 +23,7 @@ public class Customer {
         final MonetaryAmount price = paperBoy.getPaperPrice();
         if (wantsPaper(price)) {
             final MonetaryAmount money = wallet.takeMoney(price.getNumber());
-            final Optional<Paper> paper = paperBoy.sellPaper(money);
+            final Optional<Paper> paper = paperBoy.sellPaper(money);//TODO test case if money was taken but no paper returned, then money should be returned
             paper.ifPresent(this::setPaper);
         }
     }
@@ -59,7 +60,7 @@ public class Customer {
     }
 
     private boolean wantsPaper(MonetaryAmount price) {
-        return paper == null && wallet.containsAmount(price);
+        return !hasPaper() && wallet.containsAmount(price);
     }
 
 }

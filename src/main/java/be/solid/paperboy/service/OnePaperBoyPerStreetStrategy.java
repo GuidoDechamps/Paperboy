@@ -1,24 +1,21 @@
 package be.solid.paperboy.service;
 
-import be.solid.paperboy.model.Customer;
-import be.solid.paperboy.model.CustomerRepository;
-import be.solid.paperboy.model.PaperBoy;
+import be.solid.paperboy.model.*;
 import com.google.common.collect.Iterables;
 
+import java.time.LocalDate;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 class OnePaperBoyPerStreetStrategy implements DeliveryStrategy {
-    private final PaperBoyRoundService paperBoyRoundService;
-    private final LoadPaperService loadPaperService;
+    private final PaperFactory paperFactory;
     private final CustomerRepository customerRepository;
 
-    public OnePaperBoyPerStreetStrategy(PaperBoyRoundService paperBoyRoundService,
-                                        LoadPaperService loadPaperService,
-                                        CustomerRepository customerRepository) {
-        this.paperBoyRoundService = paperBoyRoundService;
-        this.loadPaperService = loadPaperService;
+    OnePaperBoyPerStreetStrategy(PaperFactory paperFactory,
+                                 CustomerRepository customerRepository) {
+        this.paperFactory = paperFactory;
         this.customerRepository = customerRepository;
     }
 
@@ -35,15 +32,22 @@ class OnePaperBoyPerStreetStrategy implements DeliveryStrategy {
     private class OnePaperBoyPerStreetConsumer implements Consumer<Set<Customer>> {
         private final Iterator<PaperBoy> iterator;
 
-        public OnePaperBoyPerStreetConsumer(Set<PaperBoy> paperBoys) {
+        private OnePaperBoyPerStreetConsumer(Set<PaperBoy> paperBoys) {
             this.iterator = Iterables.cycle(paperBoys).iterator();
         }
 
         @Override
         public void accept(Set<Customer> customers) {
             final PaperBoy paperBoy = iterator.next();
-            loadPaperService.loadPapers(paperBoy, customers.size());
-            paperBoyRoundService.deliverPapers(paperBoy, customers);
+            deliverPapers(paperBoy, customers);
+        }
+
+        private void deliverPapers(PaperBoy paperBoy, Set<Customer> customers) {
+            final List<Paper> papers = paperFactory.printPapers(customers.size(), LocalDate.now());
+            paperBoy.loadPapers(papers);
+            customers.forEach(x -> x.buyPaper(paperBoy));
         }
     }
+
+
 }
