@@ -1,4 +1,4 @@
-# Paperboy example for the anemic domain model
+# Paperboy code example for the anemic domain model
 ## Introduction
 This small code base serves as an illustration of what the anemic domain model is. It uses the paperboy example to illustrate what the disadvantages are and how can it be made into a real domain model. There are two branches. __master__ contains the anemic domain model, __real-model__ contains the refactorred model.
 
@@ -10,32 +10,40 @@ It is called an anemic (pale, weak) domain model because it looks like an actual
 ## Is it bad?
 If we look at the definition of an object then it clearly states that an object contains encapsulated data and procedures grouped together. Since the anemic domain model pattern separates data and behaviour this conflicts with the original intent of OO. Thats why it is considered by many to be an Anti-pattern.
 ## The paperboy example
-As an example of the anemic domain model we will use the paperboy example that is often used to illustrate the law of demeter. We will get into more detail on this example but for now here is the UML diagram of the domain model.
+As an example for the anemic domain model we will use the paperboy example. The paperboy is an example that is often used to illustrate the law of demeter. We have created a small code base implementation of the paperboy that can serve as an illustration of what an anemic domain model is. We will use it to illustrate what the disadvantages of the anemic domain model are and how can it be made into a real domain model. The [code base](https://github.com/GuidoDechamps/Paperboy) contains two branches. __master__ contains the anemic domain model, __real-model__ contains the refactorred model.
+
+We will get into more detail on this example but for now here is the UML diagram of the domain model.
 
 From this model you can deduce what the problem domain is for this application. Obviously it's about paperboys and their customers. Both have wallets and both have papers. So the intent of the domain is most likely for the paperboy to sell papers to its customers upon which money should be transferred from the customer to the paperboy wallet. All this seems obvious by the class diagram itself but as we will see, it is but a pale, anemic reflection of a real domain model.
 ## The paperboy use cases
 The simplest acceptance test for the paperboy example describes the required functionality. More acceptance tests can be found in the code example.
 
-__Scenario Outline__: Single customer delivery
+__Scenario Outline__:
 
-|---|---|
-|__Given__ |a single customer with <CustomerStartMoney> eur|
-|__And__ |a single paperboy|
-|__And__ |the price of a paper is <PaperPrice> eur|
-|__When__ |the paper is delivered|
-|__Then__ |the paperboy sold <NrOfPapersSold> newspapers for a total of <Revenue> eur|
-|__And__ |the single customer has <CustomerEndMoney> eur left and owns a paper state is <PaperState>|
+__Single customer delivery__
+<table>
+<tr><td><b>Given</td><td>a single customer with <CustomerStartMoney> eur</td></tr>  
+<tr><td><b>And</td><td>a single paperboy</td></tr>  
+<tr><td><b>And</td><td>the price of a paper is <PaperPrice> eur</td></tr>  
+<tr><td><b>When</td><td>the paper is delivered</td></tr>  
+<tr><td><b>Then</td><td>the paperboy sold <NrOfPapersSold> newspapers for a total of <Revenue> eur</td></tr>  
+<tr><td><b>And</td><td>the single customer has <CustomerEndMoney> eur left and owns a paper state is <PaperState></td></tr>  
+</table>
 
 __Examples__
 
-|CustomerStartMoney|PaperPrice|NrOfPapersSold|Revenue|CustomerEndMoney|PaperState|
-|---|---|---|---|---|---|
-|0	|1|	0|	0|	0	|false|
-|1	|1|	1|	1|	0	|true|
-|2	|1|	1|	1|	1	|true|
-|0	|2|	0|	0|	0	|false|
-|1	|2|	0|	0|	1	|false|
-|2	|2|	1|	2|	0	|true|
+
+<table>
+<tr><th>CustomerStartMoney</th><th>PaperPrice</th><th>NrOfPapersSold</th><th>Revenue</th><th>CustomerEndMoney</th><th>PaperState</th></tr>
+
+<tr><td>0	</td><td>1</td><td>	0</td><td>0</td><td>0</td><td>false</td></tr>  
+<tr><td>1	</td><td>1</td><td>	1</td><td>1</td><td>0</td><td>true</td></tr>  
+<tr><td>2	</td><td>1</td><td>	1</td><td>1</td><td>1</td><td>true</td></tr>
+<tr><td>0	</td><td>2</td><td>	0</td><td>0</td><td>0</td><td>false</td></tr>
+<tr><td>1	</td><td>2</td><td>	0</td><td>0</td><td>1</td><td>false</td></tr>
+<tr><td>2	</td><td>2</td><td>	1</td><td>2</td><td>0</td><td>true</td></tr>
+</table>
+
 
 ## The paper boy anemic model
 Below you will find the paperboy anemic model. The complete code can be found here. The dependencies for the code has been kept to a minimum. The production code only has a dependency on guava for its handy collection utilities. So just plain old java code from here on out.
@@ -200,10 +208,10 @@ In Clean Code uncle Bob discusses train wrecks and hybrids as code smells. He al
 "Objects expose behaviour and hide data. Data structures expose data and have no significant behaviour"
 Using one for the other results in one of his code smells. See Clean code, Chapter 6: Objects and data structures
 
-* Null pointers
+* Mutable state
 Exposing the mutable data of your 'model' makes you very vulnerable to null pointers. I for one do not want my application to crash. A null pointer to me is the result of a developer being lazy. By allowing other entities to mutate your state the code will be full with null checks. If something can never become null, you don't need to check it every time.
 
-* No invariants
+* No enforced invariants
 By exposing all our data a class can not maintain an invariant over its content. If we look at our example an invariant for a customer would be that he may have lost money without obtaining a paper. For the paperboy it is the opposite. He may have lost a paper without having received money. These two invariants are maintained in the paperboyService. 
 
 ```java
@@ -279,7 +287,10 @@ The invariants are now properly enclosed in the domain objects. It is no longer 
 
 * **The domain object can be tested in isolation**
 Since these invariants/ business rules are now enforced it is easy to now write unit tests for the Customer, PaperBoy and Wallet. Of course we could have had unit test before before but since there was no behaviour it was rather pointless. Why would you want to test getters and setters?
+
 ## The code of the real domain model
+
+Below you can find the code of the real domain model that now enforces the invariants
 
 __The customer__ 
 ```java
@@ -443,10 +454,13 @@ public class Wallet {
 ```
 
 ## The domain model unit tests
+Below you can find an simplified version of the unit tests for the real domain model. In the anemic domain model these were simply not present since there was no logic to be tested. In the real model there is real behaviour to be tested.
+
 __The Customer unit test__
 ```java
 public class CustomerTest {
  
+    //...
     //...
  
     @Test
